@@ -17,6 +17,9 @@ struct Args {
     /// Path to wav file
     #[arg(short, long)]
     path: String,
+
+    #[arg(long, default_value_t = 250)]
+    pps: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -125,7 +128,7 @@ fn draw_waveform(
     width: u32,
     height: u32,
 ) -> Result<()> {
-    let waveform_color = Rgb([63, 77, 155]);
+    // let waveform_color = Rgb([63, 77, 155]);
     let rms_colour = Rgb([121, 128, 225]);
     let mut img: RgbImage = RgbImage::new(width, height);
 
@@ -162,18 +165,18 @@ fn draw_waveform(
         rms += 32768f32;
 
         // Scale to fit the bitmap
-        let low_y = height as i32 - min * height as i32 / 65536;
-        let high_y = height as i32 - max * height as i32 / 65536;
+        // let low_y = height as i32 - min * height as i32 / 65536;
+        // let high_y = height as i32 - max * height as i32 / 65536;
         let rms_y = height as f32 - rms * height as f32 / 65536f32;
         let low_rms_y = height as f32 - rms_y;
 
         // Full waveform
-        draw_line_segment_mut(
-            &mut img,
-            (x as f32, low_y as f32),
-            (x as f32, high_y as f32),
-            waveform_color,
-        );
+        // draw_line_segment_mut(
+        //     &mut img,
+        //     (x as f32, low_y as f32),
+        //     (x as f32, high_y as f32),
+        //     waveform_color,
+        // );
         // Draw RMS for this sample group.
         draw_line_segment_mut(
             &mut img,
@@ -197,7 +200,7 @@ fn main() -> Result<()> {
         .write_style_or("LOG_STYLE", "always");
 
     // Hardcode for now, to go in args
-    let samples_per_pixel = 250;
+    let samples_per_pixel = args.pps;
     let width = 800;
     let height = 400;
 
