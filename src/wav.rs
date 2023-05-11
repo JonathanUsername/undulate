@@ -2,17 +2,12 @@ use anyhow::Result;
 use hound::WavReader;
 
 use serde::ser::{SerializeSeq, Serializer};
-use serde::{Deserialize, Serialize};
 
 use std::fs::File;
 use std::{cmp, io};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SampleOverview {
-    min: i32,
-    max: i32,
-    rms: f32,
-}
+const MAX_BITS_16: i32 = 32767;
+const NORMALIZED_RANGE: [i32; 2] = [0, 20];
 
 // See what the RMS stand for https://manual.audacityteam.org/man/glossary.html#rms
 fn calculate_rms(samples: &Vec<i32>) -> f32 {
@@ -22,9 +17,6 @@ fn calculate_rms(samples: &Vec<i32>) -> f32 {
     });
     (sqr_sum / samples.len() as f32).sqrt()
 }
-
-const MAX_BITS_16: i32 = 32767;
-const NORMALIZED_RANGE: [i32; 2] = [0, 20];
 
 fn normalize_16_bit_rms(mut value: i32) -> i32 {
     // clamp first, should always be positive since rms
@@ -50,7 +42,10 @@ pub fn stream_rms_samples(filename: &str, samples_per_pixel: u32) -> Result<()> 
         count += 1;
         if count == samples_per_pixel {
             let rms = calculate_rms(&rms_range);
-            seq.serialize_element(&rms).unwrap(); // TODO: Fix
+            if let Err(e) = seq.serialize_element(&rms) {
+                eprintln!("Silenced error in serialisation: {}", e);
+                seq.serialize_element(&0.0).unwrap()
+            }
             count = 0;
             rms_range = Vec::new();
         }
