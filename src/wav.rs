@@ -1,12 +1,13 @@
 use anyhow::Result;
+use bytes::Buf;
 use hound::WavReader;
+use reqwest;
 
 use serde::ser::{SerializeSeq, Serializer};
 
 use std::{
     cmp, fs,
     io::{self, BufReader},
-    net::TcpStream,
 };
 
 const MAX_BITS_16: i32 = 32767;
@@ -31,17 +32,20 @@ fn normalize_16_bit_rms(mut value: i32) -> i32 {
 
 type WavStream = WavReader<BufReader<Box<dyn io::Read>>>;
 
-fn get_source_stream(path: &str) -> WavStream {
+fn get_source_stream(path: &str) -> Result<WavStream> {
     let stream: Box<dyn io::Read> = match path.starts_with("http") {
-        true => Box::new(TcpStream::connect(path).expect("TCP stream should be able to connect")),
-        false => Box::new(fs::File::open(path).expect("path should be a valid filepath or url")),
+        true => {
+            let request = reqwest::blocking::get(path)?;
+            Box::new(request.bytes()?.reader())
+        }
+        false => Box::new(fs::File::open(path)?),
     };
     let reader = BufReader::new(stream);
-    WavReader::new(reader).expect("Wav reader should be able to wrap TCP stream")
+    WavReader::new(reader).map_err(|e| anyhow::anyhow!(e))
 }
 
 pub fn stream_rms_samples(path: &str, rms_range_window: u32) -> Result<()> {
-    let mut reader: WavStream = get_source_stream(path);
+    let mut reader: WavStream = get_source_stream(path)?;
 
     let out = std::io::stdout();
     let mut ser = serde_json::Serializer::new(out);

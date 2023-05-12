@@ -6,7 +6,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Path to wav file
+    /// Path to wav file on disk or URL for streaming GET request
     #[arg(short, long)]
     path: String,
 

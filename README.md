@@ -10,6 +10,7 @@ It streams a .wav file through [`hound`](https://docs.rs/hound/latest/hound/) to
 
 ```sh
 $ undulate  --path townhall.wav --rms-range 250 > townhall.json
+$ undulate  --path 'https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav' --rms-range 100 > starwars.json
 ```
 
 Serialisation errors are ignored and default to 0. They will be reported on stderr.
