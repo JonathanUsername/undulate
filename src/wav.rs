@@ -26,7 +26,7 @@ fn normalize_16_bit_rms(mut value: i32) -> i32 {
     value / (MAX_BITS_16 / NORMALIZED_RANGE[1])
 }
 
-pub fn stream_rms_samples(filename: &str, samples_per_pixel: u32) -> Result<()> {
+pub fn stream_rms_samples(filename: &str, rms_range_window: u32) -> Result<()> {
     let mut reader: WavReader<io::BufReader<File>> = hound::WavReader::open(filename)?;
 
     let out = std::io::stdout();
@@ -40,7 +40,7 @@ pub fn stream_rms_samples(filename: &str, samples_per_pixel: u32) -> Result<()> 
         let normalized = normalize_16_bit_rms(sample);
         rms_range.push(normalized);
         count += 1;
-        if count == samples_per_pixel {
+        if count == rms_range_window {
             let rms = calculate_rms(&rms_range);
             if let Err(e) = seq.serialize_element(&rms) {
                 eprintln!("Silenced error in serialisation: {}", e);

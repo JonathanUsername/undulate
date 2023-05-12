@@ -10,13 +10,14 @@ struct Args {
     #[arg(short, long)]
     path: String,
 
+    /// The number of samples to collapse into a single RMS value
     #[arg(long, default_value_t = 250)]
-    pps: u32,
+    rms_range: u32,
 }
 
 fn main() -> Result<()> {
     let args = Args::parse();
-    let samples_per_pixel = args.pps;
+    let rms_range_window = args.rms_range;
 
-    wav::stream_rms_samples(&args.path, samples_per_pixel)
+    wav::stream_rms_samples(&args.path, rms_range_window)
 }
