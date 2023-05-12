@@ -12,6 +12,8 @@ It streams a .wav file through [`hound`](https://docs.rs/hound/latest/hound/) to
 undulate  --path townhall.wav --rms-range 250 > townhall.json
 ```
 
+Serialisation errors are ignored and default to 0. They will be reported on stderr.
+
 ### Installation
 
 Download the right binary for your architecture from the Releases tab
