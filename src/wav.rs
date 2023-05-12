@@ -1,5 +1,4 @@
 use anyhow::Result;
-use bytes::Buf;
 use hound::WavReader;
 use reqwest;
 
@@ -34,12 +33,7 @@ type WavStream = WavReader<BufReader<Box<dyn io::Read>>>;
 
 fn get_source_stream(path: &str) -> Result<WavStream> {
     let stream: Box<dyn io::Read> = match path.starts_with("http") {
-        true => {
-            let request = reqwest::blocking::get(path)?;
-            // TODO: Since this is blocking it is probably fetching all bytes
-            // I might need to handle async streams here to make it work
-            Box::new(request.bytes()?.reader())
-        }
+        true => Box::new(reqwest::blocking::get(path)?),
         false => Box::new(fs::File::open(path)?),
     };
     let reader = BufReader::new(stream);
