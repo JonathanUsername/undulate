@@ -2,3 +2,4 @@
 *.png
 *.wav
 *.json
+.DS_Store

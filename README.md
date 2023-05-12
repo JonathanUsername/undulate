@@ -18,4 +18,13 @@ Download the right binary for your architecture from the Releases tab
 
 ### Development
 
-No special requirements, just `cargo build`.
+Just `cargo build`.
+
+Remember to cross-compile.
+To do that on mac m1 you might need the following:
+
+```sh
+brew tap SergioBenitez/osxct
+brew install x86_64-unknown-linux-gnu
+CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-unknown-linux-gnu-gcc cargo build --release --target=x86_64-unknown-linux-gnu
+```
