@@ -9,10 +9,16 @@ It streams a .wav file through [`hound`](https://docs.rs/hound/latest/hound/) to
 ### Examples
 
 ```sh
-undulate  --path townhall.wav --rms-range 250 > townhall.json
+$ undulate  --path townhall.wav --rms-range 250 > townhall.json
 ```
 
 Serialisation errors are ignored and default to 0. They will be reported on stderr.
+Other errors are reported directly on invocation:
+
+```sh
+$ ./target/release/undulate --path /tmp/nosuchdir
+Error: No such file or directory (os error 2)
+```
 
 ### Installation
 
@@ -26,7 +32,7 @@ Remember to cross-compile.
 To do that on mac m1 you might need the following:
 
 ```sh
-brew tap SergioBenitez/osxct
-brew install x86_64-unknown-linux-gnu
-CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-unknown-linux-gnu-gcc cargo build --release --target=x86_64-unknown-linux-gnu
+$ brew tap SergioBenitez/osxct
+$ brew install x86_64-unknown-linux-gnu
+$ CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-unknown-linux-gnu-gcc cargo build --release --target=x86_64-unknown-linux-gnu
 ```
