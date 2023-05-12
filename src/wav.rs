@@ -36,6 +36,8 @@ fn get_source_stream(path: &str) -> Result<WavStream> {
     let stream: Box<dyn io::Read> = match path.starts_with("http") {
         true => {
             let request = reqwest::blocking::get(path)?;
+            // TODO: Since this is blocking it is probably fetching all bytes
+            // I might need to handle async streams here to make it work
             Box::new(request.bytes()?.reader())
         }
         false => Box::new(fs::File::open(path)?),
