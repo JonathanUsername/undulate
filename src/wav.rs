@@ -1,10 +1,13 @@
 use anyhow::Result;
 use hound::WavReader;
+use reqwest;
 
 use serde::ser::{SerializeSeq, Serializer};
 
-use std::fs::File;
-use std::{cmp, io};
+use std::{
+    cmp, fs,
+    io::{self, BufReader},
+};
 
 const MAX_BITS_16: i32 = 32767;
 const NORMALIZED_RANGE: [i32; 2] = [0, 20];
@@ -26,8 +29,19 @@ fn normalize_16_bit_rms(mut value: i32) -> i32 {
     value / (MAX_BITS_16 / NORMALIZED_RANGE[1])
 }
 
-pub fn stream_rms_samples(filename: &str, rms_range_window: u32) -> Result<()> {
-    let mut reader: WavReader<io::BufReader<File>> = hound::WavReader::open(filename)?;
+type WavStream = WavReader<BufReader<Box<dyn io::Read>>>;
+
+fn get_source_stream(path: &str) -> Result<WavStream> {
+    let stream: Box<dyn io::Read> = match path.starts_with("http") {
+        true => Box::new(reqwest::blocking::get(path)?),
+        false => Box::new(fs::File::open(path)?),
+    };
+    let reader = BufReader::new(stream);
+    WavReader::new(reader).map_err(|e| anyhow::anyhow!(e))
+}
+
+pub fn stream_rms_samples(path: &str, rms_range_window: u32) -> Result<()> {
+    let mut reader: WavStream = get_source_stream(path)?;
 
     let out = std::io::stdout();
     let mut ser = serde_json::Serializer::new(out);
